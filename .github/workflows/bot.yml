@@ -1,0 +1,42 @@
+name: MI AI Telegram Bot (24/7)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */5 * * *'
+  push:
+    branches: [main]
+
+concurrency:
+  group: mi-ai-bot
+  cancel-in-progress: true
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies (Urdu font for PDFs)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-dejavu
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run MI AI Telegram Bot
+        env:
+          BOT_TOKEN_1: ${{ secrets.BOT_TOKEN_1 }}
+          BOT_TOKEN_2: ${{ secrets.BOT_TOKEN_2 }}
+          BOT_TOKEN_3: ${{ secrets.BOT_TOKEN_3 }}
+          HF_SPACE_URL: ${{ secrets.HF_SPACE_URL }}
+        run: python telegram_bot.py
